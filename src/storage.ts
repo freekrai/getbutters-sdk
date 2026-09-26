@@ -42,3 +42,8 @@ export function clearUserId(): void {
     // Nothing else to clear.
   }
 }
+
+/** Test helper: drop the in-memory copy only, as a page reload would. */
+export function forgetMemoryForTests(): void {
+  memory = null
+}
