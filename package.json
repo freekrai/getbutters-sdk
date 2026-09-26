@@ -1,0 +1,45 @@
+{
+  "name": "@getbutters/js",
+  "version": "0.1.0",
+  "description": "Send events and identify users to GetButters from the browser",
+  "type": "module",
+  "license": "MIT",
+  "author": "Roger Stringer",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "unpkg": "./dist/butters.min.js",
+  "jsdelivr": "./dist/butters.min.js",
+  "files": ["dist"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "bun run scripts/build.ts",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome lint --write .",
+    "lint:fix": "biome check --write .",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@happy-dom/global-registrator": "^20.14.5",
+    "@types/bun": "^1.4.2",
+    "typescript": "^7.0.2"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "packageManager": "bun@latest",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/freekrai/getbutters-sdk.git"
+  },
+  "keywords": ["analytics", "events", "getbutters", "tracking"]
+}
