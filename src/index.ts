@@ -47,7 +47,7 @@ export function init(options: InitOptions): void {
 
   config = {
     key: options.key,
-    host: (options.host ?? DEFAULT_HOST).replace(/\/+$/, ''),
+    host: (typeof options.host === 'string' && options.host !== '' ? options.host : DEFAULT_HOST).replace(/\/+$/, ''),
     debug: options.debug === true,
   }
 

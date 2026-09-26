@@ -54,6 +54,12 @@ describe('init', () => {
     await track('c', 't')
     expect(calls).toHaveLength(0)
   })
+
+  test('a non-string host falls back to the default instead of throwing', async () => {
+    expect(() => init({ key: 'pk_a', host: 42 as unknown as string })).not.toThrow()
+    await track('c', 't')
+    expect(calls[0].url).toBe('https://app.getbutters.com/api/events')
+  })
 })
 
 describe('track', () => {
