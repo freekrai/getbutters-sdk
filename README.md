@@ -60,6 +60,9 @@ init({
 })
 ```
 
+A second call to `init()` is ignored — only the first `init()` on a page
+takes effect. With `debug: true`, the ignored call logs a warning.
+
 ### `track(category, title, fields?)`
 
 ```js
@@ -115,7 +118,7 @@ What's sent:
   Every other query parameter is dropped, since it can carry tokens or
   personal data. The hash is always dropped.
 - **page_title** — the document title, truncated to 200 characters.
-- **referrer** — included only on the first pageview of the session, and
+- **referrer** — included only on the first pageview of each page load, and
   only when it's from another site.
 - **utm** — any `utm_source`, `utm_medium`, `utm_campaign`, `utm_term` or
   `utm_content` parameters present on the URL.
