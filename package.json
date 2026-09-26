@@ -16,7 +16,9 @@
   },
   "unpkg": "./dist/butters.min.js",
   "jsdelivr": "./dist/butters.min.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "sideEffects": false,
   "scripts": {
     "build": "bun run scripts/build.ts",
@@ -41,5 +43,10 @@
     "type": "git",
     "url": "git+https://github.com/freekrai/getbutters-sdk.git"
   },
-  "keywords": ["analytics", "events", "getbutters", "tracking"]
+  "keywords": [
+    "analytics",
+    "events",
+    "getbutters",
+    "tracking"
+  ]
 }
