@@ -1,6 +1,6 @@
 # @getbutters/js
 
-Send events and identify users to GetButters from the browser.
+Send events and identify users to Get Butters from the browser.
 
 ## Install
 
@@ -47,7 +47,7 @@ under you.
 
 ### Content Security Policy
 
-If your site sets a CSP, allow the SDK to reach your GetButters project and,
+If your site sets a CSP, allow the SDK to reach your Get Butters project and,
 if you use the script tag, allow loading it from jsDelivr:
 
 ```
@@ -58,7 +58,7 @@ Replace `https://app.getbutters.com` with your `host` option if you set one.
 
 ## Keys
 
-Use a *publishable* key (`pk_…`) from your GetButters API page, never a
+Use a *publishable* key (`pk_…`) from your Get Butters API page, never a
 secret `ev_…` key. A publishable key can only send events and identify users
 for the one project it belongs to. It can't trigger notifications or set
 event times, and it's rate limited to 60 requests a minute per key and IP
