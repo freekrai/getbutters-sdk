@@ -123,6 +123,7 @@ describe('pageview tracking via init({ pageviews: true })', () => {
   afterEach(() => {
     if (visibilityOwner && realVisibility) Object.defineProperty(visibilityOwner, 'visibilityState', realVisibility)
     _resetForTests()
+    window.history.replaceState(null, '', '/')
     mock.restore()
   })
 
