@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
-import { _resetForTests, init } from '../src/index'
-import { pageviewEvent, referrerForFirstView } from '../src/pageviews'
+import { _resetForTests, identify, init } from '../src/index'
+import { pageviewEvent, referrerForFirstView, startPageviews, stopPageviews } from '../src/pageviews'
 
 describe('pageviewEvent', () => {
   test('title is the pathname; url keeps only utm_* and drops the hash', () => {
@@ -29,6 +29,20 @@ describe('pageviewEvent', () => {
     expect((long.fields.metadata as any).page_title).toHaveLength(200)
     const empty = pageviewEvent('https://example.com/', '', undefined)
     expect(empty.fields.metadata).toEqual({})
+  })
+
+  test('the 200-character cap counts code points, keeping a boundary emoji whole', () => {
+    // 199 ascii chars + a 2-UTF-16-unit emoji as the 200th code point, plus
+    // trailing text to push well past the limit either way it's counted.
+    const title = `${'a'.repeat(199)}😀 trailing text past the limit`
+    const { fields } = pageviewEvent('https://example.com/', title, undefined)
+    const pageTitle = (fields.metadata as any).page_title as string
+    const codePoints = Array.from(pageTitle)
+    expect(codePoints).toHaveLength(200)
+    // A naive UTF-16 .slice(0, 200) would cut the emoji's surrogate pair in
+    // half, leaving a lone surrogate that Postgres jsonb rejects.
+    expect(codePoints[199]).toBe('😀')
+    expect(pageTitle.length).toBe(201)
   })
 
   test('referrer is included when given', () => {
@@ -68,6 +82,25 @@ function setVisibilityState(value: 'visible' | 'hidden'): void {
   const owner = findVisibilityStateOwner()
   if (!owner) throw new Error('could not find the object that owns visibilityState')
   Object.defineProperty(owner, 'visibilityState', { configurable: true, get: () => value })
+}
+
+/**
+ * Same trick as `setVisibilityState`, for `document.referrer` — happy-dom
+ * doesn't expose a settable own property for it.
+ */
+function findReferrerOwner(): object | null {
+  let proto = Object.getPrototypeOf(document)
+  while (proto) {
+    if (Object.getOwnPropertyDescriptor(proto, 'referrer')) return proto
+    proto = Object.getPrototypeOf(proto)
+  }
+  return null
+}
+
+function setReferrer(value: string): void {
+  const owner = findReferrerOwner()
+  if (!owner) throw new Error('could not find the object that owns referrer')
+  Object.defineProperty(owner, 'referrer', { configurable: true, get: () => value })
 }
 
 describe('pageview tracking via init({ pageviews: true })', () => {
@@ -143,5 +176,55 @@ describe('pageview tracking via init({ pageviews: true })', () => {
     expect(window.history.pushState).not.toBe(originalPush)
     _resetForTests()
     expect(window.history.pushState).toBe(originalPush)
+  })
+
+  test('a pushState pageview reports the title set synchronously right after pushState', async () => {
+    init({ key: 'pk_a', pageviews: true })
+    await flush()
+    window.history.pushState(null, '', '/b')
+    document.title = 'B'
+    await flush()
+    const pv = bodies.filter((b) => b.category === 'pageview')
+    expect(pv).toHaveLength(2)
+    expect(pv[1].title).toBe('/b')
+    expect(pv[1].metadata.page_title).toBe('B')
+  })
+
+  test('the second pageview in a page load omits referrer even when document.referrer is cross-origin', async () => {
+    setReferrer('https://news.ycombinator.com/')
+    try {
+      init({ key: 'pk_a', pageviews: true })
+      await flush()
+      window.history.pushState(null, '', '/next')
+      await flush()
+      const pv = bodies.filter((b) => b.category === 'pageview')
+      expect(pv).toHaveLength(2)
+      expect(pv[0].metadata.referrer).toBe('https://news.ycombinator.com/')
+      expect(pv[1].metadata.referrer).toBeUndefined()
+    } finally {
+      setReferrer('')
+    }
+  })
+
+  test('a pageview fired after identify carries the user_id', async () => {
+    init({ key: 'pk_a', pageviews: true })
+    await flush()
+    await identify('u_1')
+    window.history.pushState(null, '', '/after-identify')
+    await flush()
+    const pv = bodies.filter((b) => b.category === 'pageview')
+    expect(pv.at(-1)!.user_id).toBe('u_1')
+  })
+
+  test('a throwing send callback cannot escape startPageviews or pushState', async () => {
+    stopPageviews()
+    expect(() =>
+      startPageviews(() => {
+        throw new Error('boom')
+      }),
+    ).not.toThrow()
+    expect(() => window.history.pushState(null, '', '/boom')).not.toThrow()
+    await flush()
+    stopPageviews()
   })
 })

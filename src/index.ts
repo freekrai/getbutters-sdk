@@ -22,6 +22,7 @@ export interface TrackFields {
 }
 
 const DEFAULT_HOST = 'https://app.getbutters.com'
+const USER_ID_MAX_CODE_POINTS = 200
 
 interface Config {
   key: string
@@ -70,6 +71,10 @@ export async function identify(userId: string, properties?: Record<string, unkno
   if (!inBrowser() || !config) return
   if (typeof userId !== 'string' || userId === '') {
     warn('identify() needs a non-empty string id')
+    return
+  }
+  if ([...userId].length > USER_ID_MAX_CODE_POINTS) {
+    warn(`identify() ids must be ${USER_ID_MAX_CODE_POINTS} characters or fewer`)
     return
   }
   writeUserId(userId)

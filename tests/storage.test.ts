@@ -22,6 +22,14 @@ describe('user id storage', () => {
     expect(window.localStorage.getItem('butters_uid')).toBeNull()
   })
 
+  test('returns null, not the memory fallback, when storage works but has no value', () => {
+    writeUserId('u_9')
+    window.localStorage.removeItem('butters_uid')
+    // Another tab may have logged out; the in-memory copy from this tab's
+    // own identify() call must not resurrect a stale id.
+    expect(readUserId()).toBeNull()
+  })
+
   test('falls back to memory when localStorage throws', () => {
     Object.defineProperty(window, 'localStorage', {
       configurable: true,

@@ -59,4 +59,18 @@ describe('postJson', () => {
     await expect(postJson({ ...base, body: { n: 1n } })).resolves.toBeUndefined()
     expect(calls).toHaveLength(0)
   })
+
+  test('a body over 60,000 UTF-8 bytes is sent without keepalive', async () => {
+    const big = 'x'.repeat(70_000)
+    await postJson({ ...base, body: { category: 'c', title: 't', metadata: { big } } })
+    expect(calls).toHaveLength(1)
+    expect(calls[0].init.keepalive).toBeFalsy()
+    // The full body still went out, unlike a browser silently dropping it.
+    expect(JSON.parse(String(calls[0].init.body)).metadata.big).toHaveLength(70_000)
+  })
+
+  test('a small body keeps keepalive true', async () => {
+    await postJson({ ...base, body: { category: 'c', title: 't' } })
+    expect(calls[0].init.keepalive).toBe(true)
+  })
 })

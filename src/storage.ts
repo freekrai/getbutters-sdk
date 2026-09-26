@@ -16,13 +16,16 @@ function storage(): Storage | null {
 }
 
 export function readUserId(): string | null {
+  const s = storage()
+  // The memory fallback is only for when storage is unavailable (blocked,
+  // threw) — not when it works but simply has no value, since another tab
+  // may have logged out and cleared it deliberately.
+  if (s === null) return memory
   try {
-    const stored = storage()?.getItem(STORAGE_KEY)
-    if (stored) return stored
+    return s.getItem(STORAGE_KEY)
   } catch {
-    // Fall through to memory.
+    return memory
   }
-  return memory
 }
 
 export function writeUserId(id: string): void {

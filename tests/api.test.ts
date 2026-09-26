@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, mock, spyOn, test } from 'bun:test'
 import { _resetForTests, identify, init, reset, track } from '../src/index'
+import { readUserId } from '../src/storage'
 
 let calls: Array<{ url: string; body: any; headers: Headers }> = []
 
@@ -118,5 +119,29 @@ describe('identify', () => {
     await identify('')
     await identify(42 as unknown as string)
     expect(calls).toHaveLength(0)
+  })
+
+  test('an id over 200 code points is rejected before any storage write or request, and warns', async () => {
+    const warn = spyOn(console, 'warn').mockImplementation(() => {})
+    init({ key: 'pk_a', debug: true })
+    const tooLong = 'a'.repeat(201)
+    await identify(tooLong)
+    expect(calls).toHaveLength(0)
+    expect(readUserId()).toBeNull()
+    expect(warn).toHaveBeenCalledTimes(1)
+  })
+
+  test('an id of exactly 200 code points is accepted', async () => {
+    init({ key: 'pk_a' })
+    const id = 'a'.repeat(200)
+    await identify(id)
+    expect(calls[0].body).toEqual({ user_id: id })
+  })
+
+  test('the 200 limit counts code points, not UTF-16 units, so a trailing emoji still fits', async () => {
+    init({ key: 'pk_a' })
+    const id = `${'a'.repeat(199)}😀` // 200 code points, 201 UTF-16 units
+    await identify(id)
+    expect(calls[0].body).toEqual({ user_id: id })
   })
 })
