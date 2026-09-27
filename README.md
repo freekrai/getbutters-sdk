@@ -28,15 +28,14 @@ Paste this as-is:
 Pin the exact version in the URL rather than `@latest`, so an update to the
 package can't change what runs on your site without you choosing to bump it.
 
-For extra protection against a compromised CDN, add Subresource Integrity:
-fetch the `integrity` hash jsDelivr publishes for that exact file and version
-(append `?meta` to the file's jsDelivr URL, or use the copy button on the
-package's jsDelivr page), then add it along with `crossorigin="anonymous"`:
+For extra protection against a compromised CDN, add Subresource Integrity
+along with `crossorigin="anonymous"`. The hash below is for 0.1.0; each
+release publishes its own, so update both together when you bump the version:
 
 ```html
 <script
   src="https://cdn.jsdelivr.net/npm/@getbutters/js@0.1.0/dist/butters.min.js"
-  integrity="sha384-…"
+  integrity="sha384-geGe4yu6p4q4Q3ID8f7qkUSz2BVS7fQ9/c+YK77G7JUiXL7jRAEbgq4gFDkAPXrh"
   crossorigin="anonymous"
 ></script>
 ```
