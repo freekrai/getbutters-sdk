@@ -3,12 +3,20 @@ import { rmSync } from 'node:fs'
 rmSync('dist', { recursive: true, force: true })
 
 const esm = await Bun.build({
-  entrypoints: ['src/index.ts'],
+  entrypoints: ['src/index.ts', 'src/feedback.ts'],
   outdir: 'dist',
   format: 'esm',
   target: 'browser',
 })
 if (!esm.success) throw new AggregateError(esm.logs, 'ESM build failed')
+
+const server = await Bun.build({
+  entrypoints: ['src/server.ts'],
+  outdir: 'dist',
+  format: 'esm',
+  target: 'node',
+})
+if (!server.success) throw new AggregateError(server.logs, 'Server build failed')
 
 const iife = await Bun.build({
   entrypoints: ['src/iife.ts'],

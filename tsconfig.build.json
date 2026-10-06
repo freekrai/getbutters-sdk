@@ -12,5 +12,5 @@
     "strict": true,
     "skipLibCheck": true
   },
-  "include": ["src/index.ts"]
+  "include": ["src/index.ts", "src/server.ts", "src/feedback.ts"]
 }

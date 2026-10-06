@@ -191,6 +191,31 @@ describe('pageview tracking via init({ pageviews: true })', () => {
     expect(pv[1].metadata.page_title).toBe('B')
   })
 
+  test('same-tick navigations keep their own titles', async () => {
+    init({ key: 'pk_a', pageviews: true })
+    await flush()
+    window.history.pushState(null, '', '/a')
+    document.title = 'A'
+    window.history.pushState(null, '', '/b')
+    document.title = 'B'
+    await flush()
+    const pv = bodies.filter((b) => b.category === 'pageview')
+    expect(pv.slice(1).map((b) => [b.title, b.metadata.page_title])).toEqual([
+      ['/a', 'A'],
+      ['/b', 'B'],
+    ])
+  })
+
+  test('stopping cancels pending pageviews, including across reinitialization', async () => {
+    init({ key: 'pk_a', pageviews: true })
+    await flush()
+    window.history.pushState(null, '', '/pending')
+    _resetForTests()
+    init({ key: 'pk_b' })
+    await flush()
+    expect(titles()).toEqual(['/'])
+  })
+
   test('the second pageview in a page load omits referrer even when document.referrer is cross-origin', async () => {
     setReferrer('https://news.ycombinator.com/')
     try {

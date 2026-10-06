@@ -63,6 +63,15 @@ export function startPageviews(send: SendPageview): void {
   let lastPath: string | null = null
   let first = true
   let waitingForVisible = false
+  let pending: { href: string; timer: ReturnType<typeof setTimeout> } | null = null
+
+  const flushPending = () => {
+    if (!pending) return
+    const { href, timer } = pending
+    pending = null
+    clearTimeout(timer)
+    buildAndSend(href)
+  }
 
   // Builds and sends one pageview for a captured href. Never throws: a
   // malformed URL, anything — must never escape into the host app.
@@ -99,8 +108,10 @@ export function startPageviews(send: SendPageview): void {
       if (path === lastPath) return
       lastPath = path
       const href = window.location.href
-      if (deferred) setTimeout(() => buildAndSend(href), 0)
-      else buildAndSend(href)
+      if (deferred) {
+        flushPending()
+        pending = { href, timer: setTimeout(flushPending, 0) }
+      } else buildAndSend(href)
     } catch {
       // Swallow: see the comment on buildAndSend().
     }
@@ -123,16 +134,21 @@ export function startPageviews(send: SendPageview): void {
   const originalPush = window.history.pushState
   const originalReplace = window.history.replaceState
   window.history.pushState = function (...args: Parameters<History['pushState']>) {
+    // Finish the previous navigation while its title is still current.
+    flushPending()
     originalPush.apply(this, args)
     deferredRecord()
   }
   window.history.replaceState = function (...args: Parameters<History['replaceState']>) {
+    flushPending()
     originalReplace.apply(this, args)
     deferredRecord()
   }
   window.addEventListener('popstate', deferredRecord)
 
   stop = () => {
+    if (pending) clearTimeout(pending.timer)
+    pending = null
     window.history.pushState = originalPush
     window.history.replaceState = originalReplace
     window.removeEventListener('popstate', deferredRecord)

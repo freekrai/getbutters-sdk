@@ -1,6 +1,6 @@
 # @getbutters/js
 
-Send events and identify users to Get Butters from the browser.
+Send events and identify users to Get Butters from the browser or your server.
 
 ## Install
 
@@ -193,3 +193,78 @@ is only needed as a fallback if trusted publishing isn't set up.
 ## License
 
 MIT
+## Server SDK
+
+The upcoming release also includes a server entry point in this package.
+Version `0.1.0` on npm contains the browser client only.
+
+```js
+import { Butters, ButtersError } from '@getbutters/js/server'
+
+const butters = new Butters({
+  key: process.env.BUTTERS_API_KEY, // secret ev_… key
+  project: process.env.BUTTERS_PROJECT_ID,
+})
+
+await butters.identify('user_123', { plan: 'pro' })
+const event = await butters.track('billing', 'Plan upgraded', {
+  user_id: 'user_123',
+  notify: true,
+  metadata: { amount: 4900 },
+})
+await butters.setInsight('Queue depth', 10)
+await butters.incrementInsight('Queue depth', -1)
+```
+
+Use this import only in server code with native `fetch` support. In Next.js,
+use a route handler or server action; keep the key out of `NEXT_PUBLIC_`
+environment variables and client components. The client refuses to run in a
+browser. The browser import remains `@getbutters/js`, with publishable keys.
+
+Each client has a fixed secret key and project. `identify()` does not change
+the identity of later events: pass `user_id` on each event to keep concurrent
+requests separate. No storage or automatic pageviews are used on the server.
+
+- `track(category, title, fields?)` returns the created event. Fields:
+  `description`, `icon`, `tags`, `metadata`, `url`, `user_id`, `notify`, and
+  `created_at` (Unix seconds).
+- `identify(userId, properties?)`, `setInsight(title, value, icon?)`, and
+  `incrementInsight(title, amount, icon?)` return `{ ok: true }`.
+- Options: `key`, `project`, optional `host` (default
+  `https://app.getbutters.com`), and `timeoutMs` (default `10000`).
+- Await every request before your serverless handler returns. Calls reject on
+  failure. HTTP failures throw `ButtersError` with `status`, `message`, and
+  `retryAfter` (the `Retry-After` header, or `null`). Network and timeout
+  errors propagate. No automatic retries are made, since a retry can duplicate
+  events or increments. Redirects are refused.
+
+Run `bun run test:server` for the built package's Node HTTP integration tests.
+
+## Feedback widget
+
+The upcoming release includes an optional browser UI entry point:
+
+```js
+import { createFeedbackWidget } from '@getbutters/js/feedback'
+
+const feedback = createFeedbackWidget({ key: 'pk_YOUR_PUBLISHABLE_KEY' })
+// In a component's cleanup:
+// feedback.destroy()
+```
+
+Call after the document body exists. The button opens a labelled native dialog
+with a textarea, keyboard/focus support, and send status. Messages become
+`feedback` / `User feedback` events. They are trimmed, limited to 2,000
+characters, and retained on failure. `open()`, `close()`, and `destroy()`
+control the widget; destroy also aborts pending requests.
+
+Options: `key`, `host`, `category`, `title`, `buttonLabel`, `heading`, and
+`includePageUrl` (off by default). When enabled, the URL contains only origin
+and pathname. The browser SDK's stored user ID is attached when available.
+No email/name collection or notification fan-out is added. Messages count
+toward event quotas and publishable-key rate limits. Sends time out after 10
+seconds and are not retried automatically.
+
+The default browser import and CDN script do not include the widget. Sites
+with a strict style Content Security Policy must permit its inline styles.
+Version `0.1.0` on npm does not have this entry point yet.

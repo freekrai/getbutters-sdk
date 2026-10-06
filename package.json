@@ -9,6 +9,16 @@
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
+    "./feedback": {
+      "types": "./dist/feedback.d.ts",
+      "import": "./dist/feedback.js",
+      "default": "./dist/feedback.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js",
+      "default": "./dist/server.js"
+    },
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
@@ -25,6 +35,7 @@
   "scripts": {
     "build": "bun run scripts/build.ts",
     "test": "bun test",
+    "test:server": "bun run build && node --test tests/node/server.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "biome lint --write .",
     "lint:fix": "biome check --write .",
