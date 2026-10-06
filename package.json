@@ -1,7 +1,7 @@
 {
   "name": "@getbutters/js",
-  "version": "0.1.0",
-  "description": "Send events and identify users to Get Butters from the browser",
+  "version": "0.2.0",
+  "description": "Send events, identify users, update insights, and collect feedback with Get Butters in browsers and on servers",
   "type": "module",
   "license": "MIT",
   "author": "Roger Stringer",

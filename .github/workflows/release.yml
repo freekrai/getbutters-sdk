@@ -31,6 +31,8 @@ jobs:
       - name: Check the tag matches package.json
         run: test "v$(jq -r .version package.json)" = "$GITHUB_REF_NAME"
       - run: bun run build
+      - name: Test the built server entry point in Node
+        run: node --test tests/node/server.mjs
       - run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -195,8 +195,8 @@ is only needed as a fallback if trusted publishing isn't set up.
 MIT
 ## Server SDK
 
-The upcoming release also includes a server entry point in this package.
-Version `0.1.0` on npm contains the browser client only.
+Version `0.2.0` includes the browser, server, and feedback entry points.
+Install `@getbutters/js@^0.2.0` to use the server client.
 
 ```js
 import { Butters, ButtersError } from '@getbutters/js/server'
@@ -267,4 +267,4 @@ seconds and are not retried automatically.
 
 The default browser import and CDN script do not include the widget. Sites
 with a strict style Content Security Policy must permit its inline styles.
-Version `0.1.0` on npm does not have this entry point yet.
+The feedback entry point is available starting with `@getbutters/js@0.2.0`.
