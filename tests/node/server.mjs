@@ -129,7 +129,10 @@ test('HTTP errors expose status and retry guidance and writes are never retried'
 
 test('redirects are not followed and requests time out', async () => {
   const client = new Butters({ key: 'ev_test', project: 'a', host, timeoutMs: 100 })
-  await assert.rejects(client.track('test', 'redirect'), (error) => error instanceof ButtersError && error.status === 307)
+  await assert.rejects(
+    client.track('test', 'redirect'),
+    (error) => error instanceof ButtersError && error.status === 307,
+  )
   assert.equal(
     requests.some((r) => r.path === '/stolen'),
     false,
