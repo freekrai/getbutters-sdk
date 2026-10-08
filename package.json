@@ -1,6 +1,6 @@
 {
   "name": "@getbutters/js",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Send events, identify users, update insights, and collect feedback with Get Butters in browsers and on servers",
   "type": "module",
   "license": "MIT",

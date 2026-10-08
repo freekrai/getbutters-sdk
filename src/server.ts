@@ -110,9 +110,13 @@ export class Butters {
         headers: { Authorization: `Bearer ${this.#key}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
         signal: controller.signal,
-        // Never forward a secret key or replay writes at a redirected URL.
-        redirect: 'error',
+        // Never forward a secret key or replay writes at a redirected URL. Workers
+        // reject redirect: 'error', so take the redirect unfollowed and refuse it.
+        redirect: 'manual',
       })
+      if (response.type === 'opaqueredirect' || (response.status >= 300 && response.status < 400)) {
+        throw new ButtersError(response.status, 'Get Butters request was redirected', null)
+      }
       const result: unknown = await response.json().catch(() => null)
       if (!response.ok) {
         const message =

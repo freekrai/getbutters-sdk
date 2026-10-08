@@ -196,7 +196,7 @@ MIT
 ## Server SDK
 
 Version `0.2.0` includes the browser, server, and feedback entry points.
-Install `@getbutters/js@^0.2.0` to use the server client.
+Install `@getbutters/js@^0.2.1` to use the server client. 0.2.0 fails on Cloudflare Workers.
 
 ```js
 import { Butters, ButtersError } from '@getbutters/js/server'
