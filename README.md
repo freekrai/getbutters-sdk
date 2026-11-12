@@ -112,7 +112,7 @@ track('order', 'Checkout completed', {
 been set with `identify()`. Events sent before `identify()` has run have no
 user attached.
 
-### `identify(userId, properties?)`
+### `identify(userId, properties?, options?)`
 
 ```js
 identify('user_123', { email: 'ada@example.com', plan: 'pro' })
@@ -121,6 +121,25 @@ identify('user_123', { email: 'ada@example.com', plan: 'pro' })
 `userId` must be 1 to 200 characters. An id over 200 characters is rejected:
 nothing is stored and nothing is sent, and with `debug: true` a warning is
 logged.
+
+#### Identity verification
+
+Anyone who can read your page can use its publishable key. If you turn on
+**Verify identity** for the key (API page in Get Butters), it only accepts a
+user id that comes with a `userHash` your server signed using the project's
+identity secret. The hash is sent with `identify()` and every later `track()`
+until `reset()`. Keys without verification don't need it.
+
+```js
+// On your server (never in the browser):
+import { createHmac } from 'node:crypto'
+const userHash = createHmac('sha256', process.env.BUTTERS_IDENTITY_SECRET)
+  .update(user.id)
+  .digest('hex')
+
+// In the page, with both values from your server:
+identify(user.id, { plan: 'pro' }, { userHash })
+```
 
 ### `reset()`
 

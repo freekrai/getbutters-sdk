@@ -1,4 +1,4 @@
-import { readUserId } from './storage'
+import { identityFields } from './storage'
 
 export interface FeedbackOptions {
   /** Publishable key scoped to the project that will receive feedback. */
@@ -154,7 +154,6 @@ export function createFeedbackWidget(options: FeedbackOptions): FeedbackWidget {
     active = controller
     const timer = setTimeout(() => controller.abort(), 10_000)
     try {
-      const userId = readUserId()
       const response = await fetch(`${host}/api/events`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
@@ -162,7 +161,7 @@ export function createFeedbackWidget(options: FeedbackOptions): FeedbackWidget {
           category,
           title,
           description,
-          ...(userId ? { user_id: userId } : {}),
+          ...identityFields(),
           ...(includePageUrl ? { url: `${window.location.origin}${window.location.pathname}` } : {}),
         }),
         signal: controller.signal,

@@ -107,6 +107,39 @@ describe('track', () => {
   })
 })
 
+describe('identify with userHash (identity verification)', () => {
+  test('sends user_hash with identify and every later track, until reset', async () => {
+    init({ key: 'pk_a' })
+    await identify('u_42', { plan: 'pro' }, { userHash: 'abc123' })
+    await track('c', 'after identify')
+    reset()
+    await track('c', 'after reset')
+
+    expect(calls[0].body).toEqual({ user_id: 'u_42', user_hash: 'abc123', properties: { plan: 'pro' } })
+    expect(calls[1].body).toMatchObject({ user_id: 'u_42', user_hash: 'abc123' })
+    expect(calls[2].body.user_id).toBeUndefined()
+    expect(calls[2].body.user_hash).toBeUndefined()
+  })
+
+  test('the hash survives a reload with its user', async () => {
+    init({ key: 'pk_a' })
+    await identify('u_7', undefined, { userHash: 'h7' })
+    _resetForTests({ keepStorage: true })
+    init({ key: 'pk_a' })
+    await track('c', 't')
+    expect(calls.at(-1)!.body).toMatchObject({ user_id: 'u_7', user_hash: 'h7' })
+  })
+
+  test('identifying a new user without a hash drops the old hash', async () => {
+    init({ key: 'pk_a' })
+    await identify('u_1', undefined, { userHash: 'h1' })
+    await identify('u_2')
+    await track('c', 't')
+    expect(calls.at(-1)!.body.user_id).toBe('u_2')
+    expect(calls.at(-1)!.body.user_hash).toBeUndefined()
+  })
+})
+
 describe('identify', () => {
   test('omits properties when none are given', async () => {
     init({ key: 'pk_a' })
