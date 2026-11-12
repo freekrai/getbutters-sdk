@@ -19,7 +19,7 @@ init({ key: 'pk_…' })
 Paste this as-is:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@getbutters/js@0.1.0/dist/butters.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@getbutters/js@0.2.2/dist/butters.min.js"></script>
 <script>
   butters.init({ key: 'pk_…' })
 </script>
@@ -34,8 +34,8 @@ release publishes its own, so update both together when you bump the version:
 
 ```html
 <script
-  src="https://cdn.jsdelivr.net/npm/@getbutters/js@0.1.0/dist/butters.min.js"
-  integrity="sha384-geGe4yu6p4q4Q3ID8f7qkUSz2BVS7fQ9/c+YK77G7JUiXL7jRAEbgq4gFDkAPXrh"
+  src="https://cdn.jsdelivr.net/npm/@getbutters/js@0.2.2/dist/butters.min.js"
+  integrity="sha384-2WvemmCEoovdHzVvVd5tPHdMG4lzk5fdFgUGuUA+F3S43ydXWjyUP/MEH7ophkOo"
   crossorigin="anonymous"
 ></script>
 ```
